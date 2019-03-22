@@ -39,6 +39,10 @@ const protip = () => {
 
 const timeoutError = 'Serial timed out';
 
+// An LTE device may take up to 18 seconds to power up the modem
+const MODULE_INFO_COMMAND_TIMEOUT = 20000;
+const IDENTIFY_COMMAND_TIMEOUT = 20000;
+
 class SerialCommand {
 	constructor() {
 		spinnerMixin(this);
@@ -284,7 +288,8 @@ class SerialCommand {
 				u: 'User',
 				b: 'Bootloader',
 				r: 'Reserved',
-				m: 'Monolithic'
+				m: 'Monolithic',
+				c: 'NCP'
 			};
 			const locationMap = {
 				m: 'main',
@@ -1299,11 +1304,11 @@ class SerialCommand {
 	}
 
 	getSystemInformation(device) {
-		return this._issueSerialCommand(device, 's');
+		return this._issueSerialCommand(device, 's', MODULE_INFO_COMMAND_TIMEOUT);
 	}
 
 	askForDeviceID(device) {
-		return this._issueSerialCommand(device, 'i').then((data) => {
+		return this._issueSerialCommand(device, 'i', IDENTIFY_COMMAND_TIMEOUT).then((data) => {
 			const matches = data.match(/Your (core|device) id is\s+(\w+)/);
 			if (matches && matches.length === 3) {
 				return matches[2];
